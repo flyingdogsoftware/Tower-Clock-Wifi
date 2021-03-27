@@ -1,24 +1,31 @@
 #include <Arduino.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-#include "WiFiUdp.h"
+
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+#else
+#include <WiFi.h>
+#endif
+
+#include <ESPAsyncWebServer.h>     //Local WebServer used to serve the configuration portal
+#include <ESPAsyncWiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
 #include "NTP.h"
 #include "html.h"
-
-#include <ESP8266WiFi.h>
 
 WiFiUDP wifiUdp;
 NTP ntp(wifiUdp);
 char serInString[100];  // array that will hold the different bytes  100=100characters;
 int  serInIndx  = 0;    // index of serInString[] in which to insert the next incoming byte
 int  serOutIndx = 0;    // index of the outgoing serInString[] array;
-ESP8266WebServer server(80); //Server on port 80
+AsyncWebServer server(80);
+DNSServer dns;
 
 int exg=0;
 int clockMode=0;
 int angle=0;
 int smt=0;
 unsigned long last_exg=0; 
-
+int ctr=0;
 //read a string from the serial and store it in an array
 //this func uses globally set variable so it's not so reusable
 //I need to find the right syntax to be able to pass to the function 2 parameters:
@@ -30,9 +37,9 @@ void readSerialString () {
        while (Serial.available()){ 
           sb = Serial.read();             
           serInString[serInIndx] = sb;
-          serInIndx++;
-            delay(10);  
-            if ((strcmp(serInString,"EXG")==0)) { 
+          serInIndx++;ctr++;
+            delay(100);  
+            if (serInString[0]=='E' &&  serInString[1]=='X' &&  serInString[2]=='G'  ) { 
                     serInIndx  = 0;  
                     exg=1;
             }
@@ -103,7 +110,7 @@ void serialResponse() {
    }
 
 }
-void handleRoot() {
+void handleRoot(AsyncWebServerRequest *request) {
   unsigned long time;
   String s = HTML_TOP;  
   s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
@@ -115,24 +122,34 @@ void handleRoot() {
       else {
         s+="Motor connected! Mode: ";
         if (clockMode==0) s+="Seconds";
-        if (clockMode==1) s+="Minutes";
-        if (clockMode==2) s+="Hour+Minutes";   
+        else if (clockMode==1) s+="Minutes";
+        else if (clockMode==2) s+="Hour+Minutes";   
+        else  s+="unknown";   
         s+="<br>";
-        s+=angle;     
       }
 
   }
 
   s+="<br>AP: "+WiFi.SSID()+ ", Strength:"+ WiFi.RSSI();
-;
+  s+="<br>";
+      s+=serInString;
+      s+=",";
+      s+=ctr;
   s+=HTML_BOTTOM;
 
-  server.send(200, "text/html", s); //Send web page
+  request->send(200, "text/html", s); //Send web page
 }
-void handleCheck() {
+
+/*void handleCheck() {
  String s = "<a href='/'>Back</a><br> <br>";
 s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
- server.send(200, "text/html", s); //Send web page
+ request.send(200, "text/html", s); //Send web page
+}*/
+void configModeCallback (AsyncWiFiManager *myWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 
 void setup() 
@@ -142,14 +159,15 @@ void setup()
 //    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
     // put your setup code here, to run once:
-    Serial.begin(115200);
+    Serial.begin(38400); // 115200 38400
     Serial.println("Tower Clock Wifi");
   
  //   WiFi.mode(WIFI_STA); // it is a good practice to make sure your code sets wifi mode how you want it.
 
     //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wm;
-
+    AsyncWiFiManager wm(&server,&dns);
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+    wm.setAPCallback(configModeCallback);
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
 
@@ -187,6 +205,6 @@ void loop() {
 
   readSerialString();
   serialResponse();
-  server.handleClient();      
+ // server.handleClient();      
 
 }
