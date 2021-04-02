@@ -110,6 +110,9 @@ void serialResponse() {
    }
 
 }
+/**
+ *   index page: show important infomation and buttons
+ * */
 void handleRoot(AsyncWebServerRequest *request) {
   unsigned long time;
   String s = HTML_TOP;  
@@ -132,12 +135,63 @@ void handleRoot(AsyncWebServerRequest *request) {
 
   s+="<br>AP: "+WiFi.SSID()+ ", Strength:"+ WiFi.RSSI();
   s+="<br>";
-      s+=serInString;
-      s+=",";
-      s+=ctr;
   s+=HTML_BOTTOM;
 
   request->send(200, "text/html", s); //Send web page
+}
+void handleUp(AsyncWebServerRequest *request) {
+  Serial.write('G');
+  Serial.write('O');
+  Serial.write('U');
+  handleRoot(request);
+}
+
+
+void handleRight(AsyncWebServerRequest *request) {
+  Serial.write('G');
+  Serial.write('O');
+  Serial.write('R');
+  handleRoot(request);
+}
+
+
+void handleDown(AsyncWebServerRequest *request) {
+  Serial.write('G');
+  Serial.write('O');
+  Serial.write('D');
+  handleRoot(request);
+}
+
+void handleLeft(AsyncWebServerRequest *request) {
+  Serial.write('G');
+  Serial.write('O');
+  Serial.write('L');
+  handleRoot(request);
+}
+
+void handleStart(AsyncWebServerRequest *request) {
+  Serial.write('S');
+  Serial.write('T');
+  Serial.write('A');
+  handleRoot(request);
+}
+void handleModeSecond(AsyncWebServerRequest *request) {
+  Serial.write('M');
+  Serial.write('O');
+  Serial.write('S');
+  handleRoot(request);
+}
+void handleModeMinute(AsyncWebServerRequest *request) {
+  Serial.write('M');
+  Serial.write('O');
+  Serial.write('M');
+  handleRoot(request);
+}
+void handleModeHour(AsyncWebServerRequest *request) {
+  Serial.write('M');
+  Serial.write('O');
+  Serial.write('H');
+  handleRoot(request);
 }
 
 /*void handleCheck() {
@@ -194,6 +248,18 @@ void setup()
         Serial.println("start NTP");
         serialFlush();
         server.on("/", handleRoot);      //Which routine to handle at root location        
+        server.on("/up.html", handleUp);      
+        server.on("/right.html", handleRight);      
+        server.on("/down.html", handleDown);      
+        server.on("/left.html", handleLeft);      
+        server.on("/start.html", handleStart);      
+
+        server.on("/set_mode_second.html", handleModeSecond);      
+        server.on("/set_mode_minute
+        .html", handleModeMinute);      
+        server.on("/set_mode_hour.html", handleModeHour);      
+
+
     //    server.on("/check.html", handleCheck);      //Which routine to handle at check location        
         server.begin();                  //Start server
         Serial.println("HTTP server started");        
