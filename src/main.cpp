@@ -255,8 +255,7 @@ void setup()
         server.on("/start.html", handleStart);      
 
         server.on("/set_mode_second.html", handleModeSecond);      
-        server.on("/set_mode_minute
-        .html", handleModeMinute);      
+        server.on("/set_mode_minute.html", handleModeMinute);      
         server.on("/set_mode_hour.html", handleModeHour);      
 
 
