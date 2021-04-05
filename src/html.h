@@ -76,9 +76,10 @@ const char HTML_TOP[]  = R"=====(
 </a>
 <br><br>
 Set Mode:<br><br>
-<a href="/set_mode_seconds.html" class="set_mode">Second</a><a href="/set_mode_seconds.html" class="set_mode">Minute</a><a href="/set_mode_hour.html" class="set_mode">Hour + Minute</a>
+<a href="/set_mode_second.html" class="set_mode">Second</a><a href="/set_mode_minute.html" class="set_mode">Minute</a><a href="/set_mode_hour.html" class="set_mode">Hour + Minute</a>
 <br><br>
-
+<a href="/set_mode_crazy.html" class="set_mode">Crazy!</a>
+<br><br>
 
 )=====";
 
