@@ -193,7 +193,12 @@ void handleModeHour(AsyncWebServerRequest *request) {
   Serial.write('H');
   handleRoot(request);
 }
-
+void handleModeCrazy(AsyncWebServerRequest *request) {
+  Serial.write('M');
+  Serial.write('O');
+  Serial.write('C');
+  handleRoot(request);
+}
 /*void handleCheck() {
  String s = "<a href='/'>Back</a><br> <br>";
 s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
@@ -257,6 +262,7 @@ void setup()
         server.on("/set_mode_second.html", handleModeSecond);      
         server.on("/set_mode_minute.html", handleModeMinute);      
         server.on("/set_mode_hour.html", handleModeHour);      
+        server.on("/set_mode_crazy.html", handleModeCrazy);      
 
 
     //    server.on("/check.html", handleCheck);      //Which routine to handle at check location        
