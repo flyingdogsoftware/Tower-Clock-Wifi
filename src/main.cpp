@@ -1,3 +1,7 @@
+#define GIPO0 0 
+#define GIPO2 2
+
+
 #include <Arduino.h>
 
 #if defined(ESP8266)
@@ -110,6 +114,15 @@ void serialResponse() {
    }
 
 }
+
+void configModeCallback (AsyncWiFiManager *myWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  Serial.println(myWiFiManager->getConfigPortalSSID());
+}
+
+
 /**
  *   index page: show important infomation and buttons
  * */
@@ -199,21 +212,24 @@ void handleModeCrazy(AsyncWebServerRequest *request) {
   Serial.write('C');
   handleRoot(request);
 }
-/*void handleCheck() {
- String s = "<a href='/'>Back</a><br> <br>";
-s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
- request.send(200, "text/html", s); //Send web page
-}*/
-void configModeCallback (AsyncWiFiManager *myWiFiManager) {
-  Serial.println("Entered config mode");
-  Serial.println(WiFi.softAPIP());
-  //if you used auto generated SSID, print it
-  Serial.println(myWiFiManager->getConfigPortalSSID());
+
+void handleResetWifi(AsyncWebServerRequest *request) {
+    AsyncWiFiManager wm(&server,&dns);
+    wm.resetSettings();
+    delay(100);      
+    ESP.reset();
+}
+
+void handleTopPosition() {
+  Serial.write('T');
+  Serial.write('O');
+  Serial.write('P');
 }
 
 void setup() 
 {
 
+        pinMode(GIPO0, INPUT_PULLUP);
 
 //    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
@@ -264,16 +280,28 @@ void setup()
         server.on("/set_mode_hour.html", handleModeHour);      
         server.on("/set_mode_crazy.html", handleModeCrazy);      
 
+        server.on("/reset_wifi.html", handleResetWifi);      
 
     //    server.on("/check.html", handleCheck);      //Which routine to handle at check location        
         server.begin();                  //Start server
         Serial.println("HTTP server started");        
+        // sensor
+
     }
 
 }
+  int setTopPosition=0;
 
 void loop() {
-
+  int sensorVal = digitalRead(GIPO0);
+  if (!sensorVal) {
+    if (!setTopPosition) {
+      handleTopPosition();
+    } 
+    setTopPosition=1;
+  } else {
+    setTopPosition=0;
+  }
   readSerialString();
   serialResponse();
  // server.handleClient();      

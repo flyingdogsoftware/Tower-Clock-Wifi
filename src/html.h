@@ -86,5 +86,7 @@ Set Mode:<br><br>
 
 const char HTML_BOTTOM[]= R"=====(
     <br><img src="https://upload.wikimedia.org/wikipedia/commons/a/ae/World_landmarks_icons_-_Big_Ben.svg" class="tower">
+    <br><br>
+    <a href="/reset_wifi.html" class="set_mode">Reset Wifi</a>
   </body>
 )=====";
