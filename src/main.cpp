@@ -140,6 +140,7 @@ void handleRoot(AsyncWebServerRequest *request) {
         if (clockMode==0) s+="Seconds";
         else if (clockMode==1) s+="Minutes";
         else if (clockMode==2) s+="Hour+Minutes";   
+        else if (clockMode==3) s+="Crazy";   
         else  s+="unknown";   
         s+="<br>";
       }
