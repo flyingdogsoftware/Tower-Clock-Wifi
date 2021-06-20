@@ -3,6 +3,8 @@
 
 User interface and NTP communication over serial for S42BV1.2 closed loop stepper motors (Stm-32) for Real Tower Clock project.
 
+Project page: https://hackaday.io/project/178777-real-tower-clock-version-20
+
 ## Installation
 
 Use VSCode for compile and upload via a Serial Programmer.
