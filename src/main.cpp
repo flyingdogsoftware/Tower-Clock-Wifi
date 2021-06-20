@@ -129,6 +129,7 @@ void configModeCallback (AsyncWiFiManager *myWiFiManager) {
 void handleRoot(AsyncWebServerRequest *request) {
   unsigned long time;
   String s = HTML_TOP;  
+  ntp.update();
   s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
   s+="<br>";
   if (!smt) s+="Motor connection: none";
