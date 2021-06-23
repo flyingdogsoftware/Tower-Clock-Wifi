@@ -15,6 +15,7 @@
 
 #include "NTP.h"
 #include "html.h"
+#include <Ticker.h>
 
 WiFiUDP wifiUdp;
 NTP ntp(wifiUdp);
@@ -30,6 +31,9 @@ int angle=0;
 int smt=0;
 unsigned long last_exg=0; 
 int ctr=0;
+
+
+
 //read a string from the serial and store it in an array
 //this func uses globally set variable so it's not so reusable
 //I need to find the right syntax to be able to pass to the function 2 parameters:
@@ -66,12 +70,10 @@ void serialResponse() {
    if( serInIndx > 0) {
       serInString[serInIndx]=0;
       if (strcmp(serInString,"T")==0) {
-          ntp.update();
           Serial.write(ntp.hours());
           Serial.write(ntp.minutes());
           Serial.write(ntp.seconds());
       } else if (strcmp(serInString,"D")==0) {
-          ntp.update();
           Serial.write((int8_t)(ntp.year()-2000));
           Serial.write(ntp.month());
           Serial.write(ntp.day());
@@ -86,7 +88,6 @@ void serialResponse() {
           angle=serInString[1];
           angle=angle*2;
           smt=1;
-          ntp.update();
           Serial.write('R');
           Serial.write('E');
           Serial.write('S');
@@ -100,7 +101,6 @@ void serialResponse() {
           ip=WiFi.localIP();
           Serial.write((byte *) &ip, 4);                
       } else if (strcmp(serInString,"getTime")==0) {
-          ntp.update();
           Serial.println(ntp.formattedTime("%Y-%m-%d %H:%M:%S"));
       } else if  (strcmp(serInString,"Wifi")==0) {
         WiFi.printDiag(Serial);  
@@ -129,7 +129,6 @@ void configModeCallback (AsyncWiFiManager *myWiFiManager) {
 void handleRoot(AsyncWebServerRequest *request) {
   unsigned long time;
   String s = HTML_TOP;  
-  ntp.update();
   s+=ntp.formattedTime("%Y-%m-%d %H:%M:%S");
   s+="<br>";
   if (!smt) s+="Motor connection: none";
@@ -228,6 +227,12 @@ void handleTopPosition() {
   Serial.write('P');
 }
 
+// update NTP time very second
+void updateNTP() {
+   ntp.update();
+}
+Ticker ticker1(updateNTP, 1000, 0, MILLIS);
+
 void setup() 
 {
 
@@ -287,7 +292,8 @@ void setup()
 
     //    server.on("/check.html", handleCheck);      //Which routine to handle at check location        
         server.begin();                  //Start server
-        Serial.println("HTTP server started");        
+        Serial.println("HTTP server started");    
+    
         // sensor
 
     }
@@ -296,6 +302,7 @@ void setup()
   int setTopPosition=0;
 
 void loop() {
+  ticker1.update();  
   int sensorVal = digitalRead(GIPO0);
   if (!sensorVal) {
     if (!setTopPosition) {
